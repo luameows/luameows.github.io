@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="baidu-site-verification" content="Y8IL4umZKZ">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入文章密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "715d814c"
+    });
+  daovoice('update');
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="C++,opencv,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="写在前面由于教研室项目要求，整个系统构造如下。即利用NPD检测人脸，经过去重过滤操作后，上传至服务器，随后在接收端保留接收图片，进行仿射变换预处理，随后导入训练好的神经网络，提取特征完成人脸识别。  本篇主要涉及内容： 1.ubuntu下安装opencv及相关配置 1.服务器接收图片压入队列 2.新线程读取队列，完成人脸识别操作 3.测试函数，模拟接收图片。即，windows与linux下扫描文件">
+<meta name="keywords" content="C++,opencv">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于deep-learning的人脸识别系统">
+<meta property="og:url" content="https://luameows.github.io/2018/05/06/程序开发-基于caffe的人脸识别系统/index.html">
+<meta property="og:site_name" content="Lumo&#39;s blog">
+<meta property="og:description" content="写在前面由于教研室项目要求，整个系统构造如下。即利用NPD检测人脸，经过去重过滤操作后，上传至服务器，随后在接收端保留接收图片，进行仿射变换预处理，随后导入训练好的神经网络，提取特征完成人脸识别。  本篇主要涉及内容： 1.ubuntu下安装opencv及相关配置 1.服务器接收图片压入队列 2.新线程读取队列，完成人脸识别操作 3.测试函数，模拟接收图片。即，windows与linux下扫描文件">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7761526-facb7db78d0c89c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7761526-2d7ea8b395e81345.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7761526-dfb0755ba50168bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-11-07T07:57:00.343Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基于deep-learning的人脸识别系统">
+<meta name="twitter:description" content="写在前面由于教研室项目要求，整个系统构造如下。即利用NPD检测人脸，经过去重过滤操作后，上传至服务器，随后在接收端保留接收图片，进行仿射变换预处理，随后导入训练好的神经网络，提取特征完成人脸识别。  本篇主要涉及内容： 1.ubuntu下安装opencv及相关配置 1.服务器接收图片压入队列 2.新线程读取队列，完成人脸识别操作 3.测试函数，模拟接收图片。即，windows与linux下扫描文件">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/7761526-facb7db78d0c89c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://luameows.github.io/2018/05/06/程序开发-基于caffe的人脸识别系统/">
+
+
+
+
+
+  <title>基于deep-learning的人脸识别系统 | Lumo's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?d6bda1545232b4b3e89f90617ef2b80e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    
+    <a href="https://github.com/luameows" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewbox="0 0 250 250" style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Lumo's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://luameows.github.io/2018/05/06/程序开发-基于caffe的人脸识别系统/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Lumo Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar_1.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lumo's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">基于deep-learning的人脸识别系统</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-06T19:22:45+08:00">
+                2018-05-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/程序开发/" itemprop="url" rel="index">
+                    <span itemprop="name">程序开发</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/05/06/程序开发-基于caffe的人脸识别系统/" class="leancloud_visitors" data-flag-title="基于deep-learning的人脸识别系统">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>由于教研室项目要求，整个系统构造如下。即利用NPD检测人脸，经过去重过滤操作后，上传至服务器，随后在接收端保留接收图片，进行仿射变换预处理，随后导入训练好的神经网络，提取特征完成人脸识别。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/7761526-facb7db78d0c89c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>本篇主要涉及内容：</p>
+<p>1.ubuntu下安装opencv及相关配置</p>
+<p>1.服务器接收图片压入队列</p>
+<p>2.新线程读取队列，完成人脸识别操作</p>
+<p>3.测试函数，模拟接收图片。即，windows与linux下扫描文件夹。</p>
+<a id="more"></a>
+<h1 id="安装opencv"><a href="#安装opencv" class="headerlink" title="安装opencv"></a>安装opencv</h1><p>主要参考教程<a href="https://blog.csdn.net/cocoaqin/article/details/78163171" target="_blank" rel="noopener">ubuntu16.04安装opencv3.4.1教程 </a>。</p>
+<h2 id="编译cpp"><a href="#编译cpp" class="headerlink" title="编译cpp"></a>编译cpp</h2><p>利用g++或gcc编译程序时，需调用opencv依赖项。</p>
+<p>1.找到<code>lib</code>存储路径，默认路径为<code>/usr/local/lib/pkgconfig</code></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/7761526-2d7ea8b395e81345.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>2.加入环境变量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user@ubuntu:~$ gedit .bashrc</span><br></pre></td></tr></table></figure>
+<p>将上述路径加入最底部。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/7761526-dfb0755ba50168bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>3.编译程序命令</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">user@ubuntu:~$ g++ -o test test.cpp `pkg-config --cflags --libs opencv`</span><br></pre></td></tr></table></figure>
+<h1 id="扫描文件夹"><a href="#扫描文件夹" class="headerlink" title="扫描文件夹"></a>扫描文件夹</h1><h2 id="windows"><a href="#windows" class="headerlink" title="windows"></a>windows</h2><p>需要包含库文件<code>#include&lt;io.h&gt;</code>。主要用到结构体<code>_finddata_t</code>，函数<code>_findfirst()</code>, <code>_findnext()</code>, <code>_findclose()</code>。<strong>若文件夹为动态，需不停遍历。</strong></p>
+<p>1.结构体<code>_finddata_t</code>可以用来获取文件各种信息。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">finddata_t</span>&#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> attrib;		<span class="comment">//文件属性</span></span><br><span class="line">    <span class="keyword">time_t</span> time_create; 	<span class="comment">//创建时间</span></span><br><span class="line">    <span class="keyword">time_t</span> time_access; 	<span class="comment">//最后一次访问时间</span></span><br><span class="line">    <span class="keyword">time_t</span> time_write;		<span class="comment">//最后一次修改时间</span></span><br><span class="line">    <span class="keyword">_fsize_t</span> size;			<span class="comment">//文件大小</span></span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">260</span>];			<span class="comment">//文件名</span></span><br><span class="line">&#125;；</span><br></pre></td></tr></table></figure>
+<p>2.<code>_findfirst</code>函数<code>long _findfirst(const char *filename, struct _finddata_t *fileinfo)</code>;</p>
+<p>参数：</p>
+<ul>
+<li>filename，查找路径下文件名，可以用<code>*.*</code>查找所有文件，<code>*.jpg</code>查找所有<code>.jpg</code>文件。注意<code>*</code>将查找<code>.</code>与<code>..</code></li>
+<li>fileinfo，_finddata_t结构体指针，<strong>无须初始化</strong>。<strong>若查找成功，将当前文件信息传入该结构体</strong>。</li>
+</ul>
+<p>输出：查找成功，返回文件句柄；失败，返回-1。</p>
+<p>3.<code>_findnext</code>函数<code>int _findnext(long hfile, struct _finddata_t * fileinfo);</code></p>
+<p>参数：</p>
+<ul>
+<li>hfile，文件句柄。函数会依据当前句柄寻找下一个文件</li>
+<li>fileinfo，_finddata_t结构体指针。<strong>若查找成功，将当前文件信息传入该结构体</strong>。</li>
+</ul>
+<p>输出：查找成功，返回0；失败，返回-1。</p>
+<p>4.<code>_findclose()</code>函数<code>int _findclose(long);</code></p>
+<p>只有一个参数，文件句柄。若关闭成功返回0，失败返回-1。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;io.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="built_in">string</span> tarpath=<span class="string">"G:\\pic\\positive"</span>;  <span class="comment">//遍历文件夹</span></span><br><span class="line">    <span class="built_in">string</span> p;<span class="comment">//字符串，存放路径</span></span><br><span class="line">    <span class="keyword">long</span>   hFile = <span class="number">0</span>;<span class="comment">//文件句柄</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> _<span class="title">finddata_t</span> <span class="title">fileinfo</span>;</span><span class="comment">//文件信息，声明一个存储文件信息的结构体</span></span><br><span class="line">     <span class="comment">//若查找成功，则进入</span></span><br><span class="line">    <span class="keyword">if</span> ((hFile = _findfirst(p.assign(tarpath).append(<span class="string">"\\*"</span>).c_str(), &amp;fileinfo)) != <span class="number">-1</span>)&#123;</span><br><span class="line">		<span class="keyword">do</span>&#123;</span><br><span class="line">			<span class="comment">//如果是目录,迭代之（即文件夹内还有文件夹）  </span></span><br><span class="line">			<span class="comment">//cout &lt;&lt; hFile &lt;&lt; endl;</span></span><br><span class="line">			<span class="keyword">if</span> ((fileinfo.attrib &amp;  _A_SUBDIR))&#123;</span><br><span class="line">				<span class="comment">//文件名不等于"."&amp;&amp;文件名不等于".."</span></span><br><span class="line">				<span class="comment">//.表示当前目录</span></span><br><span class="line">				<span class="comment">//..表示当前目录的父目录</span></span><br><span class="line">				<span class="comment">//判断时，两者都要忽略，不然就无限递归跳不出去了！</span></span><br><span class="line">				<span class="keyword">if</span> (<span class="built_in">strcmp</span>(fileinfo.name, <span class="string">"."</span>) != <span class="number">0</span> &amp;&amp; <span class="built_in">strcmp</span>(fileinfo.name, <span class="string">".."</span>) != <span class="number">0</span>)</span><br><span class="line">					getFiles(p.assign(path).append(<span class="string">"\\"</span>).append(fileinfo.name), files);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span>&#123;</span><br><span class="line">				<span class="built_in">cout</span>&lt;&lt;fileinfo.name&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">			&#125;</span><br><span class="line">        &#125;<span class="keyword">while</span>((_findnext(hFile, &amp;fileinfo) == <span class="number">0</span>));</span><br><span class="line">        ——findclose(hFile);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="linux平台"><a href="#linux平台" class="headerlink" title="linux平台"></a>linux平台</h2><p>linux下文件<strong>没有创建时间的说法</strong>。其读取文件顺序与文件名无关，默认按照文件写在磁盘上的位置。主要用到结构体<code>DIR</code>, <code>stat</code>, <code>dirent</code>, 函数<code>opendir</code>, <code>readdir</code>, <code>closedir</code>。</p>
+<blockquote>
+<p>1.使用opendir打开目录a，返回指向目录的目录流dir</p>
+<p>2.readdir(dir)读取目录流，更新下一个文件的目录流，将当前文件信息存于dirent结构体中</p>
+<p>3.调用stat（d-&gt;name,stat *e） 或dirent结构体获取文件信息。</p>
+</blockquote>
+<p>需要包含的库。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;dirent.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br></pre></td></tr></table></figure>
+<p>1.结构体<code>DIR</code></p>
+<p>DIR结构体类似于FILE，是一个内部结构，主要用于<code>opendir</code>, <code>readdir</code>, <code>closedir</code>等函数。</p>
+<p>2.结构体<code>dirent</code>，主要起着一个索引的作用。 </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dirent</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">　　<span class="keyword">long</span> d_ino; <span class="comment">/* inode number 索引节点号 */</span></span><br><span class="line">    <span class="keyword">off_t</span> d_off; <span class="comment">/* offset to this dirent 在目录文件中的偏移，默认排序方式 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> d_reclen; <span class="comment">/* length of this d_name 文件名长 */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> d_type; <span class="comment">/* the type of d_name 文件类型 */</span></span><br><span class="line">    <span class="keyword">char</span> d_name [NAME_MAX+<span class="number">1</span>]; <span class="comment">/* file name (null-terminated) 文件名，最长255字符 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.结构体<code>stat</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stat</span> &#123;</span></span><br><span class="line">        <span class="keyword">mode_t</span>     st_mode;       <span class="comment">//文件访问权限</span></span><br><span class="line">        <span class="keyword">ino_t</span>      st_ino;       <span class="comment">//索引节点号</span></span><br><span class="line">        <span class="keyword">dev_t</span>      st_dev;        <span class="comment">//文件使用的设备号</span></span><br><span class="line">        <span class="keyword">dev_t</span>      st_rdev;       <span class="comment">//设备文件的设备号</span></span><br><span class="line">        <span class="keyword">nlink_t</span>    st_nlink;      <span class="comment">//文件的硬连接数</span></span><br><span class="line">        <span class="keyword">uid_t</span>      st_uid;        <span class="comment">//所有者用户识别号</span></span><br><span class="line">        <span class="keyword">gid_t</span>      st_gid;        <span class="comment">//组识别号</span></span><br><span class="line">        <span class="keyword">off_t</span>      st_size;       <span class="comment">//以字节为单位的文件容量</span></span><br><span class="line">        <span class="keyword">time_t</span>     st_atime;      <span class="comment">//最后一次访问该文件的时间</span></span><br><span class="line">        <span class="keyword">time_t</span>     st_mtime;      <span class="comment">//最后一次修改该文件的时间</span></span><br><span class="line">        <span class="keyword">time_t</span>     st_ctime;      <span class="comment">//最后一次改变该文件状态的时间</span></span><br><span class="line">        <span class="keyword">blksize_t</span> st_blksize;    <span class="comment">//包含该文件的磁盘块的大小</span></span><br><span class="line">        <span class="keyword">blkcnt_t</span>   st_blocks;     <span class="comment">//该文件所占的磁盘块</span></span><br><span class="line">      &#125;;</span><br></pre></td></tr></table></figure>
+<p>4.<code>opendir</code>函数<code>DIR * opendir(const char *name);</code></p>
+<p>参数：</p>
+<ul>
+<li>name，需要打开的文件路径</li>
+</ul>
+<p>输出：成功，返回DIR*形态的目录流；失败，返回NULL</p>
+<p>5.<code>readdir</code>函数<code>struct dirent * readdir(DIR* dir);</code></p>
+<p>参数：</p>
+<ul>
+<li>dir，读取目录流</li>
+</ul>
+<p>输出： 成功则返回下个目录进入点。有错误发生或读取到目录文件尾则返回NULL 。 </p>
+<p>6.<code>closedir</code>函数<code>int closedir(DIR* dir);</code></p>
+<p>参数：</p>
+<ul>
+<li>dir，读取目录流</li>
+</ul>
+<p>输出：关闭成功则返回0，失败返回-1，错误原因存于errno 中。 </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;dirent.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* dir_name = <span class="string">"./sample"</span>;			<span class="comment">//要读取文件路径</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> * <span class="title">filename</span>;</span>    				<span class="comment">// 存储文件信息结构体</span></span><br><span class="line">    DIR * dir;                  				<span class="comment">// 目录流	</span></span><br><span class="line">    strtuct stat statbuf;						<span class="comment">//stat结构体，存储更详细文件信息</span></span><br><span class="line">    dir = opendir( dir_name );</span><br><span class="line">    <span class="keyword">if</span>(dir==<span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"open dir error"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span>( ( filename = readdir(dir) ) != <span class="literal">NULL</span> )&#123;</span><br><span class="line">        <span class="keyword">if</span>( <span class="built_in">strcmp</span>( filename-&gt;d_name , <span class="string">"."</span> ) == <span class="number">0</span> ||<span class="built_in">strcmp</span>( filename-&gt;d_name , <span class="string">".."</span>) == <span class="number">0</span>    )<span class="comment">//判断"."与".."</span></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="built_in">string</span> name=filename-&gt;d_name;			<span class="comment">//利用dirent结构体获取文件名</span></span><br><span class="line">        <span class="built_in">string</span> path;</span><br><span class="line">        path.assign(<span class="string">"./sample/"</span>).append(name);	<span class="comment">//当前文件访问路径</span></span><br><span class="line">        stat(filename,&amp;statbuf);				<span class="comment">//利用dirent获取文件stat结构信息</span></span><br><span class="line">     &#125;</span><br><span class="line">	closedir(dir);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="多线程编程"><a href="#多线程编程" class="headerlink" title="多线程编程"></a>多线程编程</h1><p>参考文档<a href="https://pan.baidu.com/s/10VA1nZsenjMjSm48YbKbng" target="_blank" rel="noopener">unix linux多线程编程</a>， <a href="https://blog.csdn.net/liangxanhai/article/details/7767430" target="_blank" rel="noopener">pthread_create函数的详细讲解 </a>，<a href="https://blog.csdn.net/xiaobaismiley/article/details/22611863" target="_blank" rel="noopener">C++ 多线程并发控制——互斥锁 pthread_mutex </a>。</p>
+<p>linux下需调用依赖库<code>#include&lt;pthread&gt;</code>，该依赖项不是linux默认库。<strong>在编译时，需添加-lpthread参数，调用静态链接库</strong>。</p>
+<h2 id="创建线程"><a href="#创建线程" class="headerlink" title="创建线程"></a>创建线程</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_create</span><span class="params">(<span class="keyword">pthread_t</span> *<span class="keyword">restrict</span> thread,</span></span></span><br><span class="line"><span class="function"><span class="params">                   <span class="keyword">const</span> <span class="keyword">pthread_attr_t</span> *<span class="keyword">restrict</span> attr,</span></span></span><br><span class="line">                   void*（*start_routine)(void*),</span><br><span class="line">				 <span class="keyword">void</span> *<span class="keyword">restrict</span> arg);</span><br></pre></td></tr></table></figure>
+<p>参数thread指向保存线程ID的pthread_t结构。参数attr表示一个封装了线程属性的对象，用来配置线程的运行，如果为NULL，线程使用默认属性。参数start_routine是线程开始执行时调用的函数名。<strong>该函数必须具有以下格式，<code>void* start_routine(void* arg);</code></strong>。参数arg表示传递给函数的参数。如果需要向start_routine函数传递的参数不止一个，那么需要把这些参数放到一个结构中，然后把这个结构的地址作为arg的参数传入。</p>
+<h2 id="互斥锁"><a href="#互斥锁" class="headerlink" title="互斥锁"></a>互斥锁</h2><p>为了防止不同线程同时操作任务队列，应在一个线程读写队列时，将队列上锁。</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p><code>int  pthread_mutex_init(pthread_mutex_t *mp, const pthread_mutexattr_t *mattr)</code></p>
+<p>参数：</p>
+<ul>
+<li>mp，互斥锁地址</li>
+<li>mattr，锁属性，默认null。</li>
+</ul>
+<p>如果互斥锁已初始化，则它会处于未锁定状态 。</p>
+<h3 id="锁定互斥锁"><a href="#锁定互斥锁" class="headerlink" title="锁定互斥锁"></a>锁定互斥锁</h3><p><code>int pthread_mutex_lock(pthread_mutex_t *mutex);</code></p>
+<p>参数： </p>
+<ul>
+<li>mutex，互斥锁地址</li>
+</ul>
+<p>函数返回时，互斥锁被锁定。调用线程是该互斥锁的属主。如果该互斥锁已被另一个线程锁定和拥有，则调用线程将阻塞，直到该互斥锁变为可用为止。</p>
+<h3 id="解除互斥锁"><a href="#解除互斥锁" class="headerlink" title="解除互斥锁"></a>解除互斥锁</h3><p><code>int pthread_mutex_unlock(pthread_mutex_t *mutex);</code></p>
+<p>参数：</p>
+<ul>
+<li>mutex，互斥锁地址</li>
+</ul>
+<h1 id="程序源码"><a href="#程序源码" class="headerlink" title="程序源码"></a>程序源码</h1><p>说明：main函数模拟服务器接收数据，即每间隔1s读取一张图片，并送入队列。新建线程进行人脸匹配识别操作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">////////////////////////////////////////////////////////////////////////  </span></span><br><span class="line"><span class="comment">// file_server.c --  </span></span><br><span class="line"><span class="comment">// /////////////////////////////////////////////////////////////////////  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;netinet/in.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/types.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/socket.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="comment">//thread</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">"pthread.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;//need by read() function</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//opencv</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/dnn/dnn.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/imgproc/imgproc.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/highgui/highgui.hpp&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/core/utils/trace.hpp&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> cv::dnn;</span><br><span class="line"><span class="comment">//test</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;dirent.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SERVER_PORT    10001  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LENGTH_OF_LISTEN_QUEUE     20  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BUFFER_SIZE                96*1024  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FILE_NAME_MAX_SIZE         512  </span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//task to be transported to queue</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CTask</span> &#123;</span></span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">string</span> m_name;</span><br><span class="line">	Mat m_data;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//lock</span></span><br><span class="line"><span class="keyword">pthread_mutex_t</span> mutex;</span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">queue</span>&lt;CTask&gt; QTask;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">Mat <span class="title">extractFeature</span><span class="params">(<span class="keyword">const</span> String &amp;imgFile,Net &amp;net)</span> </span>&#123;</span><br><span class="line">    Mat img = imread(imgFile.c_str());</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\t\tread img file...\n"</span>);</span><br><span class="line">    <span class="keyword">if</span> (img.empty())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"\t\tCan't read image from the file: %s\n"</span> , imgFile.c_str() );</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    Mat inputBlob = blobFromImage(img, <span class="number">1</span>, Size(<span class="number">96</span>, <span class="number">96</span>),</span><br><span class="line">                                    Scalar(<span class="number">127</span>, <span class="number">127</span>, <span class="number">127</span>));   <span class="comment">//Convert Mat to batch of images</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\t\tconvert inputBlob successfully\n"</span>);</span><br><span class="line">    CV_TRACE_REGION(<span class="string">"forward"</span>);</span><br><span class="line">    net.setInput(inputBlob, <span class="string">"data"</span>);        <span class="comment">//set the network input</span></span><br><span class="line">    Mat prob = net.forward(<span class="string">"fc1"</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\t\tforward calculate successfully\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> prob;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">queWork</span><span class="params">(<span class="keyword">void</span>*arg)</span> </span>&#123;</span><br><span class="line">	<span class="comment">//******************initialize the deep-learning net work and extract prob feature**********</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread create successfully!\tStart initialize dp network\n"</span>);</span><br><span class="line">	<span class="comment">//std::queue&lt;CTask&gt; QTask = *(std::queue&lt;CTask&gt;*)arg;</span></span><br><span class="line">	CV_TRACE_FUNCTION();</span><br><span class="line">    String modelTxt = <span class="string">"ResNet11.prototxt"</span>;</span><br><span class="line">    String modelBin = <span class="string">"ResNet11.caffemodel"</span>;</span><br><span class="line">    String probfile = <span class="string">"./jpegFile/prob.jpg"</span>;</span><br><span class="line">    Net net = dnn::readNetFromCaffe(modelTxt, modelBin);</span><br><span class="line">    <span class="keyword">if</span> (net.empty())</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"\tCan't load network by using the following files: \nprototxt: %s\ncaffemodel: %s\n"</span>,modelTxt.c_str(),modelBin.c_str()) ;</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\tload net successfully!  Start extract feature\n"</span>);</span><br><span class="line">	<span class="keyword">const</span> Mat fprob = extractFeature(probfile, net).clone();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Initialize dp network successfully!\n"</span>);</span><br><span class="line">	<span class="keyword">double</span> threshold = <span class="number">0.6750</span>;</span><br><span class="line">	<span class="comment">//******************************************************************************************</span></span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">	    <span class="comment">//std::cout&lt;&lt;"start pop"&lt;&lt;std::endl;</span></span><br><span class="line">        <span class="comment">//std::cout&lt;&lt;"queue empty? "&lt;&lt;QTask.empty()&lt;&lt;std::endl;</span></span><br><span class="line">        <span class="comment">//sleep(1);</span></span><br><span class="line">		<span class="keyword">if</span> (!QTask.empty()) &#123;</span><br><span class="line">		    pthread_mutex_lock(&amp;mutex);</span><br><span class="line">		    CTask it=QTask.front();</span><br><span class="line">		    <span class="built_in">printf</span>(<span class="string">"deal %s "</span>, it.m_name.c_str());</span><br><span class="line">		    <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">" ["</span>&lt;&lt;it.m_data.cols&lt;&lt;<span class="string">", "</span>&lt;&lt;it.m_data.rows&lt;&lt;<span class="string">"]"</span>&lt;&lt;<span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">		    QTask.pop();</span><br><span class="line">		    pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">		    <span class="keyword">int</span> roww = it.m_data.cols/<span class="number">1.6</span>;</span><br><span class="line">			<span class="keyword">int</span> rowh = it.m_data.rows/<span class="number">2.2</span>;</span><br><span class="line">			</span><br><span class="line">			</span><br><span class="line">			<span class="keyword">if</span> (roww &lt; <span class="number">50</span> || rowh &lt; <span class="number">50</span>) &#123;</span><br><span class="line">				<span class="comment">//printf("\timg too small, ignored\n");</span></span><br><span class="line">				<span class="comment">//delete it;</span></span><br><span class="line">				<span class="comment">//printf("\tdelete old prob");</span></span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		    <span class="keyword">int</span> wstart = (it.m_data.rows - roww) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">int</span> hstart = (it.m_data.cols - rowh) / <span class="number">2</span>;</span><br><span class="line">			Mat cutdata = it.m_data(Range(wstart, wstart + roww), Range(hstart, hstart + rowh));</span><br><span class="line">			Mat inputdata;</span><br><span class="line">			resize(cutdata, inputdata, Size(<span class="number">96</span>, <span class="number">96</span>));</span><br><span class="line">			Mat intputBlob = blobFromImage(inputdata, <span class="number">1</span>, Size(<span class="number">96</span>, <span class="number">96</span>), Scalar(<span class="number">127</span>, <span class="number">127</span>, <span class="number">127</span>));</span><br><span class="line">			<span class="comment">//*********************************************************************************</span></span><br><span class="line">			<span class="comment">//**************************extract feature, compute cosine dist and faceRec******* </span></span><br><span class="line">			CV_TRACE_REGION(<span class="string">"forward"</span>);</span><br><span class="line">			net.setInput(intputBlob, <span class="string">"data"</span>);</span><br><span class="line">			Mat fcomp = net.forward(<span class="string">"fc1"</span>);</span><br><span class="line">            <span class="keyword">double</span> upstair = fcomp.dot(fprob);</span><br><span class="line">            <span class="keyword">double</span> downstair1 = <span class="built_in">sqrt</span>(fprob.dot(fprob));</span><br><span class="line">			<span class="keyword">double</span> downstair2 = <span class="built_in">sqrt</span>(fcomp.dot(fcomp));</span><br><span class="line">			<span class="keyword">double</span> cosTest = <span class="number">0.5</span> + <span class="number">0.5</span>*upstair / downstair1 / downstair2;</span><br><span class="line">			<span class="keyword">if</span> (cosTest &gt;= threshold) &#123;</span><br><span class="line">			    <span class="built_in">printf</span>(<span class="string">"\tcosine dist is %.4f"</span>, cosTest);</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"\tsame face\n"</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">//delete it;</span></span><br><span class="line">		    <span class="comment">/*</span></span><br><span class="line"><span class="comment">            CTask *it = &amp;QTask.front();</span></span><br><span class="line"><span class="comment">            printf("deal %s\n", it-&gt;m_name.c_str());</span></span><br><span class="line"><span class="comment">			//***************************filter small img and resize to 96x96*******************</span></span><br><span class="line"><span class="comment">			int roww = it-&gt;m_data.cols/1.6;</span></span><br><span class="line"><span class="comment">			int rowh = it-&gt;m_data.rows/2.2;</span></span><br><span class="line"><span class="comment">			if (roww &lt; 50 || rowh &lt; 50) &#123;</span></span><br><span class="line"><span class="comment">				printf("\timg too small, ignored\n");</span></span><br><span class="line"><span class="comment">				QTask.pop();</span></span><br><span class="line"><span class="comment">				pthread_mutex_unlock(&amp;mutex);</span></span><br><span class="line"><span class="comment">				delete it;</span></span><br><span class="line"><span class="comment">				continue;</span></span><br><span class="line"><span class="comment">			&#125;</span></span><br><span class="line"><span class="comment">            int wstart = (it-&gt;m_data.rows - roww) / 2;</span></span><br><span class="line"><span class="comment">            int hstart = (it-&gt;m_data.cols - rowh) / 2;</span></span><br><span class="line"><span class="comment">			Mat cutdata = it-&gt;m_data(Range(wstart, wstart + roww), Range(hstart, hstart + rowh));</span></span><br><span class="line"><span class="comment">			Mat inputdata;</span></span><br><span class="line"><span class="comment">			resize(cutdata, inputdata, Size(96, 96));</span></span><br><span class="line"><span class="comment">			Mat intputBlob = blobFromImage(inputdata, 1, Size(96, 96), Scalar(127, 127, 127));</span></span><br><span class="line"><span class="comment">			//*********************************************************************************</span></span><br><span class="line"><span class="comment">			//**************************extract feature, compute cosine dist and faceRec******* </span></span><br><span class="line"><span class="comment">			CV_TRACE_REGION("forward");</span></span><br><span class="line"><span class="comment">			net.setInput(intputBlob, "data");</span></span><br><span class="line"><span class="comment">			Mat fcomp = net.forward("fc1");</span></span><br><span class="line"><span class="comment">            double upstair = fcomp.dot(fprob);</span></span><br><span class="line"><span class="comment">            double downstair1 = sqrt(fprob.dot(fprob));</span></span><br><span class="line"><span class="comment">			double downstair2 = sqrt(fcomp.dot(fcomp));</span></span><br><span class="line"><span class="comment">			double cosTest = 0.5 + 0.5*upstair / downstair1 / downstair2;</span></span><br><span class="line"><span class="comment">			printf("\tcosine dist is %.4f", cosTest);</span></span><br><span class="line"><span class="comment">			if (cosTest &gt;= threshold) &#123;</span></span><br><span class="line"><span class="comment">				printf("\tsame face");</span></span><br><span class="line"><span class="comment">			&#125;</span></span><br><span class="line"><span class="comment">			QTask.pop();</span></span><br><span class="line"><span class="comment">			</span></span><br><span class="line"><span class="comment">			delete it;</span></span><br><span class="line"><span class="comment">			*/</span></span><br><span class="line">		&#125;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">	<span class="comment">//********create a thread for faceRecognization**********</span></span><br><span class="line">	<span class="comment">//new thread</span></span><br><span class="line">    <span class="keyword">pthread_t</span> thread;</span><br><span class="line">	<span class="keyword">int</span> isthread;</span><br><span class="line">    isthread = pthread_create(&amp;thread, <span class="literal">NULL</span>, queWork, <span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span> (isthread != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"create thread fail: %s\n"</span>, strerror(isthread));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//********************************************************</span></span><br><span class="line">	pthread_mutex_init (&amp;mutex,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* dir_name = <span class="string">"./sample"</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> * <span class="title">filename</span>;</span>    <span class="comment">// return value for readdir()</span></span><br><span class="line">    DIR * dir;                   <span class="comment">// return value for opendir()	</span></span><br><span class="line">    dir = opendir( dir_name );</span><br><span class="line">    <span class="keyword">if</span>(dir==<span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"open dir error"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span>( ( filename = readdir(dir) ) != <span class="literal">NULL</span> )&#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">CTask</span> <span class="title">task</span>;</span></span><br><span class="line">       </span><br><span class="line">        <span class="keyword">if</span>( <span class="built_in">strcmp</span>( filename-&gt;d_name , <span class="string">"."</span> ) == <span class="number">0</span> ||<span class="built_in">strcmp</span>( filename-&gt;d_name , <span class="string">".."</span>) == <span class="number">0</span>    )</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="built_in">string</span> name=filename-&gt;d_name;</span><br><span class="line">        <span class="built_in">string</span> path;</span><br><span class="line">        path.assign(<span class="string">"./sample/"</span>).append(name);</span><br><span class="line">        <span class="comment">//cout&lt;&lt;path&lt;&lt;endl;</span></span><br><span class="line">        task.m_name = name;</span><br><span class="line">		Mat data=imread(path.c_str());</span><br><span class="line">		<span class="keyword">if</span> (data.empty())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"\t\tCan't read image from the file: %s\n"</span> , path.c_str() );</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">		task.m_data = data;</span><br><span class="line">		<span class="comment">//cout&lt;&lt;data&lt;&lt;endl;</span></span><br><span class="line">        pthread_mutex_lock (&amp;mutex);</span><br><span class="line">        QTask.push(task);</span><br><span class="line">        pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"push "</span>&lt;&lt;name&lt;&lt;<span class="string">"  "</span>;</span><br><span class="line">        <span class="built_in">cout</span>&lt;&lt;<span class="string">"["</span>&lt;&lt;QTask.front().m_data.rows&lt;&lt;<span class="string">", "</span>&lt;&lt;QTask.front().m_data.cols&lt;&lt;<span class="string">"]"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     closedir(dir);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/2018/05/06/程序开发-基于caffe的人脸识别系统/">基于deep-learning的人脸识别系统</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 Lumo Wang 的个人博客">Lumo Wang</a></p>
+  <p><span>发布时间:</span>2018年05月06日 - 19:05</p>
+  <p><span>最后更新:</span>2018年11月07日 - 15:11</p>
+  <p><span>原始链接:</span><a href="/2018/05/06/程序开发-基于caffe的人脸识别系统/" title="基于deep-learning的人脸识别系统">https://luameows.github.io/2018/05/06/程序开发-基于caffe的人脸识别系统/</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://luameows.github.io/2018/05/06/程序开发-基于caffe的人脸识别系统/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+	});
+    });  
+</script>
+
+      
+    </div>
+    
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>请我喝杯咖啡，我会继续熬夜的~</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="Lumo Wang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/C/" rel="tag"><i class="fa fa-tag"></i> C++</a>
+          
+            <a href="/tags/opencv/" rel="tag"><i class="fa fa-tag"></i> opencv</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/14/论文笔记-基于LTR的人脸质量评估/" rel="next" title="基于LTR的人脸质量评估">
+                <i class="fa fa-chevron-left"></i> 基于LTR的人脸质量评估
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/14/程序开发-基于landmark疲劳检测/" rel="prev" title="基于landmark疲劳检测">
+                基于landmark疲劳检测 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+    
+    
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar_1.jpg" alt="Lumo Wang">
+            
+              <p class="site-author-name" itemprop="name">Lumo Wang</p>
+              <p class="site-description motion-element" itemprop="description">深度瞎学，人工智障</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/luameows" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:luameows@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://asdfv1929.github.io/" title="asdfv1929" target="_blank">asdfv1929</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#安装opencv"><span class="nav-number">2.</span> <span class="nav-text">安装opencv</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#编译cpp"><span class="nav-number">2.1.</span> <span class="nav-text">编译cpp</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#扫描文件夹"><span class="nav-number">3.</span> <span class="nav-text">扫描文件夹</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#windows"><span class="nav-number">3.1.</span> <span class="nav-text">windows</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#linux平台"><span class="nav-number">3.2.</span> <span class="nav-text">linux平台</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#多线程编程"><span class="nav-number">4.</span> <span class="nav-text">多线程编程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建线程"><span class="nav-number">4.1.</span> <span class="nav-text">创建线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#互斥锁"><span class="nav-number">4.2.</span> <span class="nav-text">互斥锁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">4.2.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#锁定互斥锁"><span class="nav-number">4.2.2.</span> <span class="nav-text">锁定互斥锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解除互斥锁"><span class="nav-number">4.2.3.</span> <span class="nav-text">解除互斥锁</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#程序源码"><span class="nav-number">5.</span> <span class="nav-text">程序源码</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lumo Wang</span>
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共31.8k字</span>
+</div>
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '2f01fcb4aa34c0c51236',
+          clientSecret: 'fd4f068c4c1f584a82954e5b527e036bcb5d870c',
+          repo: 'luameows.github.io',
+          owner: 'luameows',
+          admin: ['luameows'],
+          id: decodeURI(location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')           
+       </script>
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('3');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("j9SfgCpISl93oW7WzAj4oUQQ-gzGzoHsz", "lNpX50BewLa4elNxiOtICqBp");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

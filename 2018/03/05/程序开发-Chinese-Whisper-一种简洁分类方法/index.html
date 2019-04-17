@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="baidu-site-verification" content="Y8IL4umZKZ">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入文章密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+  <script>
+  (function(i,s,o,g,r,a,m){i["DaoVoiceObject"]=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.charset="utf-8";m.parentNode.insertBefore(a,m)})(window,document,"script",('https:' == document.location.protocol ? 'https:' : 'http:') + "//widget.daovoice.io/widget/0f81ff2f.js","daovoice")
+  daovoice('init', {
+      app_id: "715d814c"
+    });
+  daovoice('update');
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="python,分类算法,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="写在前面近来利用神经网络提取人脸特征的方法越来越多，人脸相似性匹配准确度也越来越高。但仍然没有找到一种适合于未知类别数量，自动划分的方法，而k-means等聚类方法均是要预先设定分类数量后再开始进行聚类操作。在博客的介绍下，了解了一种比较简单的无监督分类方法，chinese-whisper。现将具体实验总结如下…">
+<meta name="keywords" content="python,分类算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chinese-Whisper,一种简洁分类方法">
+<meta property="og:url" content="https://luameows.github.io/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/index.html">
+<meta property="og:site_name" content="Lumo&#39;s blog">
+<meta property="og:description" content="写在前面近来利用神经网络提取人脸特征的方法越来越多，人脸相似性匹配准确度也越来越高。但仍然没有找到一种适合于未知类别数量，自动划分的方法，而k-means等聚类方法均是要预先设定分类数量后再开始进行聚类操作。在博客的介绍下，了解了一种比较简单的无监督分类方法，chinese-whisper。现将具体实验总结如下…">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-e5694065a3c451d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-c90ae6fba38cb773.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-0e3d1e60a4c8dcdc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-986ffe8a073f6169.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-04b12fe13befcbb3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-f9d534378f9f58a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-569deb25ea609ebd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-e79dc317eabef8d7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/7761526-8720baf0fa476282.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2018-11-07T08:01:16.644Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chinese-Whisper,一种简洁分类方法">
+<meta name="twitter:description" content="写在前面近来利用神经网络提取人脸特征的方法越来越多，人脸相似性匹配准确度也越来越高。但仍然没有找到一种适合于未知类别数量，自动划分的方法，而k-means等聚类方法均是要预先设定分类数量后再开始进行聚类操作。在博客的介绍下，了解了一种比较简单的无监督分类方法，chinese-whisper。现将具体实验总结如下…">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/7761526-e5694065a3c451d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://luameows.github.io/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/">
+
+
+
+
+
+  <title>Chinese-Whisper,一种简洁分类方法 | Lumo's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?d6bda1545232b4b3e89f90617ef2b80e";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+    
+    <a href="https://github.com/luameows" class="github-corner" aria-label="View source on Github"><svg width="80" height="80" viewbox="0 0 250 250" style="fill:#64CEAA; color:#fff; position: absolute; top: 0; border: 0; left: 0; transform: scale(-1, 1);" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Lumo's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://luameows.github.io/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Lumo Wang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar_1.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Lumo's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chinese-Whisper,一种简洁分类方法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-05T14:44:12+08:00">
+                2018-03-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/程序开发/" itemprop="url" rel="index">
+                    <span itemprop="name">程序开发</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/" class="leancloud_visitors" data-flag-title="Chinese-Whisper,一种简洁分类方法">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h1><p>近来利用神经网络提取人脸特征的方法越来越多，人脸相似性匹配准确度也越来越高。但仍然没有找到一种适合于<strong>未知类别数量，自动划分的方法</strong>，而k-means等聚类方法均是要预先设定分类数量后再开始进行聚类操作。<br>在<a href="http://blog.csdn.net/liyuan123zhouhui/article/details/70312716" target="_blank" rel="noopener">博客</a>的介绍下，了解了一种比较简单的无监督分类方法，<a href="https://www.baidu.com/link?url=4q_a4FqmrYeD_q52EH9CqaX3qzuHqqH9HC22A6wDnn3uzztOst9hg8JPBx6ciN-WTQexsownJID-4QyjbAaSDTZDJqZK3Q9iJK3UM282i3G&amp;wd=&amp;eqid=b4376cc30002bb39000000035a5ef2c9" target="_blank" rel="noopener">chinese-whisper</a>。<br>现将具体实验总结如下…</p>
+<a id="more"></a>
+<h1 id="CW-算法"><a href="#CW-算法" class="headerlink" title="CW-算法"></a>CW-算法</h1><p>【适用场景】<br>未知具体分类数量，自动查找类别个数并进行快速聚类。<br>【算法核心】<br><strong>初始化</strong><br>构建无向图，以每个节点为一个类别，不同节点之间计算相似度，当相似度超过threshold，将两个节点相连形成关联边，权重为相似度。<br><strong>迭代</strong><br>1.随机选取一个节点<code>i</code>开始，在其邻居中选取边权重最大者<code>j</code>，并将该点归为节点<code>j</code>类（若邻居中有多个节点(j,k,l)属于同一类，则将这些节点权重相加再参与比较）。<br>2.遍历所有节点后，重复迭代至满足迭代次数。<br>【算法分析】<br><strong>1.特征向量高要求</strong><br>从算法介绍可以看出，该算法即是对<strong>两两匹配</strong>的升级。因而该算法一个很大影响因素即为门限threshold的选取。<br>算法的准确度又会回归到神经网络的核心要求，<strong>增大类间间距，减小类内间距</strong>。另外，该算法对于类别数较多的情况下，可能会有较差的结果，即类别越多，当前空间下的特征向量区分性越差。<br><strong>2.随机性较大</strong><br>该算法的一个重大缺陷在于其随机性较大。究其原因，每次迭代会随机选取开始节点，因而对于模糊节点而言，不同遍历次序会使该节点被归在不同类别中。<br><img src="http://upload-images.jianshu.io/upload_images/7761526-e5694065a3c451d4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="随机性"><br>对于上图，正确分类为{1,2}，{3,4,5}。然而由于特征向量表现度不够，3节点归类较为模糊。<br>若遍历次序为1→2→3，节点{1,2}会优先归在同一类，导致3节点有更大可能性被归属于{1,2,3}，因为此时{4}，{5}仍是独立类别。<br>若遍历次序为4→5→3，节点{4,5}会优先归在同一类，导致3节点有更大可能性被归属于{3,4,5}，因为此时{1}，{2}仍是独立类别。</p>
+<h1 id="算法测试"><a href="#算法测试" class="headerlink" title="算法测试"></a>算法测试</h1><p>【测试来源】<br>数据集为提取的lfw人脸最多的前19种，网络模型为mtcnn+resnet11。<br>【测试步骤】<br>分别选取2,3,4,5类用于分类情况测试，考虑到随机性，每个类别各测试5次。<br>【详细性能】<br>测试结果如下图，图中分类错误已用红笔圈出。<br><strong>2-class</strong><br>采用2个分类集时，样本数量一共119张，其中0-76属于第一类，77-118属于第二类。<br><img src="http://upload-images.jianshu.io/upload_images/7761526-c90ae6fba38cb773.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="2-class"><br>准确率–100%<br>说明：由于5次测试结果相同，这里不再添加。</p>
+<p><strong>3-class</strong><br>采用3个分类集时，样本数量一共355张，其中0-76属于第一类，77-118属于第二类，119-354属于第三类。<br><img src="http://upload-images.jianshu.io/upload_images/7761526-0e3d1e60a4c8dcdc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="3-class"><br>准确率–2个错误<br>说明：由于5次测试结果相同，这里不再添加。</p>
+<p><strong>4-class</strong><br>采用4个分类集时，样本数量一共476张，其中0-76属于第一类，77-118属于第二类，119-354属于第三类,355-475属于第四类。<br> 准确率–无法恒定。出现2中分类情况，见下图<br><img src="http://upload-images.jianshu.io/upload_images/7761526-986ffe8a073f6169.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="4-class-1"><br>第一种情况，只分出了3个类别，错误将第四类归在图中第二类<br><img src="http://upload-images.jianshu.io/upload_images/7761526-04b12fe13befcbb3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="4-class-2"><br>第二种情况，成功区分4个类别。准确率–6个错误</p>
+<p><strong>5-class</strong><br>采用5个分类集时，样本数量一共1006张，其中0-76属于第一类，77-118属于第二类，119-354属于第三类,355-475属于第四类,476-1005属于第五类。<br> 准确率–很差。见下图<br><img src="http://upload-images.jianshu.io/upload_images/7761526-f9d534378f9f58a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="5-class"><br>​除了119-354分类准确，其他全部归为了图中第0类。<br><strong>5-class</strong><br>采用5个分类集，每40张一类。出现随机现象。<br><img src="http://upload-images.jianshu.io/upload_images/7761526-569deb25ea609ebd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="5-class-1"><br><img src="http://upload-images.jianshu.io/upload_images/7761526-e79dc317eabef8d7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="5-class-2"><br><img src="http://upload-images.jianshu.io/upload_images/7761526-8720baf0fa476282.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="5-class-3"></p>
+<p>【详细代码】<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*-coding:utf-8 -*-</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">face_distance</span><span class="params">(face_encodings, face_to_compare)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    计算一组特征值与带比较特征值之间的距离，默认采用欧氏距离</span></span><br><span class="line"><span class="string">    参数配置</span></span><br><span class="line"><span class="string">    face_encodings:一组特征值，包含多个</span></span><br><span class="line"><span class="string">    face_to_compare:待比较特征值，只有一个</span></span><br><span class="line"><span class="string">    return:返回不同特征向量之间距离的数组矩阵</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">    <span class="keyword">if</span> len(face_encodings) == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> np.empty((<span class="number">0</span>))</span><br><span class="line">    <span class="string">'''</span></span><br><span class="line"><span class="string">    利用numpy包进行距离估量</span></span><br><span class="line"><span class="string">    http://blog.csdn.net/u013749540/article/details/51813922</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    dist=[]</span><br><span class="line"></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    # 欧氏距离，考虑后续邻接边选择weight较大者，此处选取余弦相似度</span></span><br><span class="line"><span class="string">    for i in range(0,len(face_encodings)):</span></span><br><span class="line"><span class="string">        #sim = 1.0/(1.0+np.linalg.norm(face_encodings[i]-face_to_compare))</span></span><br><span class="line"><span class="string">        sim=np.linalg.norm(face_encodings[i]-face_to_compare)</span></span><br><span class="line"><span class="string">        dist.append(sim)</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="comment"># 余弦相似度</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>, len(face_encodings)):</span><br><span class="line">        num=np.dot(face_encodings[i],face_to_compare)</span><br><span class="line">        cos=num/(np.linalg.norm(face_encodings[i])*np.linalg.norm(face_to_compare))</span><br><span class="line">        sim=<span class="number">0.5</span>+<span class="number">0.5</span>*cos <span class="comment"># 归一化</span></span><br><span class="line">        dist.append(sim)</span><br><span class="line">    <span class="keyword">return</span> dist</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">find_all_index</span><span class="params">(arr,item)</span>:</span></span><br><span class="line">    <span class="string">'''获取list中相同元素的索引</span></span><br><span class="line"><span class="string">    输入：</span></span><br><span class="line"><span class="string">        arr：待求取list</span></span><br><span class="line"><span class="string">        item：待获取元素</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    输出：</span></span><br><span class="line"><span class="string">        相同元素索引，格式为list'''</span></span><br><span class="line">    <span class="keyword">return</span> [i <span class="keyword">for</span> i, a <span class="keyword">in</span> enumerate(arr) <span class="keyword">if</span> a==item]</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_chinese_whispers</span><span class="params">(threshold=<span class="number">0.675</span>, iterations=<span class="number">10</span>)</span>:</span></span><br><span class="line">    <span class="string">""" Chinese Whisper Algorithm</span></span><br><span class="line"><span class="string">    算法概要</span></span><br><span class="line"><span class="string">        1.初始化每个节点为一个类</span></span><br><span class="line"><span class="string">        2.选取任意节点开始迭代</span></span><br><span class="line"><span class="string">            选择该节点邻居中边权重最大者，将两则归为一类；若邻居中有2者以上属于同一类，将这些类权重相加进行比较</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">    输入：</span></span><br><span class="line"><span class="string">        encoding_list:待分类的特征向量组</span></span><br><span class="line"><span class="string">        threshold:判断门限，判断两个向量是否相关</span></span><br><span class="line"><span class="string">        iteration:迭代次数</span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">    输出：</span></span><br><span class="line"><span class="string">        sorted_clusters:一组分类结果，按从大到小排列</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">from</span> random <span class="keyword">import</span> shuffle</span><br><span class="line">    <span class="keyword">import</span> networkx <span class="keyword">as</span> nx</span><br><span class="line">    <span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">    <span class="keyword">import</span> re</span><br><span class="line">    <span class="comment"># Create graph</span></span><br><span class="line">    nodes = []</span><br><span class="line">    edges = []</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#encoding_list格式为</span></span><br><span class="line">    <span class="comment">#[(path1,encode1),(path2,encode2),(path3,encode3)]</span></span><br><span class="line">    <span class="comment">#image_paths, encodings = zip(*encoding_list)</span></span><br><span class="line">    feature_matrix=np.loadtxt(<span class="string">r'F:\5.txt'</span>)</span><br><span class="line">    encodings=[]</span><br><span class="line">    <span class="comment">#image_paths=[]</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(feature_matrix)):</span><br><span class="line">        encodings.append(feature_matrix[i,:])</span><br><span class="line">        <span class="comment">#image_paths.append(r'F:\outCluster\%d\\' %i)</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> len(encodings) &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">print</span> (<span class="string">"No enough encodings to cluster!"</span>)</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line">    </span><br><span class="line">    <span class="string">''' </span></span><br><span class="line"><span class="string">    节点初始化：</span></span><br><span class="line"><span class="string">        1.将每个特征向量设为一个类</span></span><br><span class="line"><span class="string">        2.计算每个特征向量之间的距离，并根据门限判定是否构成邻接边</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    <span class="keyword">for</span> idx, face_encoding_to_check <span class="keyword">in</span> enumerate(encodings):</span><br><span class="line">        <span class="comment"># Adding node of facial encoding</span></span><br><span class="line">        node_id = idx</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 节点属性包括</span></span><br><span class="line">        <span class="comment"># node_id:节点id,(0,n-1)</span></span><br><span class="line">        <span class="comment"># label:节点类别，初始化每个节点一个类别</span></span><br><span class="line">        <span class="comment"># path：节点导出路径，用于图片分类导出</span></span><br><span class="line">        node = (node_id, &#123;<span class="string">'label'</span>:idx&#125;)</span><br><span class="line">        <span class="comment">#node = (node_id, &#123;'label': idx, 'path': image_paths[idx]&#125;)</span></span><br><span class="line">        nodes.append(node)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># Facial encodings to compare</span></span><br><span class="line">        <span class="keyword">if</span> (idx+<span class="number">1</span>) &gt;= len(encodings):</span><br><span class="line">            <span class="comment"># Node is last element, don't create edge</span></span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment">#构造比较向量组</span></span><br><span class="line">        <span class="comment">#若当前向量为i,则比较向量组为[i+1:n]</span></span><br><span class="line">        compare_encodings = encodings[idx+<span class="number">1</span>:]</span><br><span class="line">        distances = face_distance(compare_encodings, face_encoding_to_check)</span><br><span class="line">        encoding_edges = []</span><br><span class="line">        <span class="keyword">for</span> i, distance <span class="keyword">in</span> enumerate(distances):</span><br><span class="line">            <span class="comment"># 若人脸特征匹配，则在这两个节点间添加关联边</span></span><br><span class="line">            <span class="keyword">if</span> distance &gt;= threshold:</span><br><span class="line">                <span class="comment">#edge_id：与node_id相连接的节点的node_id</span></span><br><span class="line">                edge_id = idx+i+<span class="number">1</span></span><br><span class="line">                encoding_edges.append((node_id, edge_id, &#123;<span class="string">'weight'</span>: distance&#125;))</span><br><span class="line"></span><br><span class="line">        edges = edges + encoding_edges</span><br><span class="line"></span><br><span class="line">    G = nx.Graph()</span><br><span class="line">    G.add_nodes_from(nodes)</span><br><span class="line">    G.add_edges_from(edges)</span><br><span class="line"></span><br><span class="line">    <span class="string">'''</span></span><br><span class="line"><span class="string">    迭代过程</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">0</span>, iterations):</span><br><span class="line">        cluster_nodes = list(G.nodes()) <span class="comment">#返回节点id</span></span><br><span class="line">        shuffle(cluster_nodes)<span class="comment"># 随机选取一个开始节点</span></span><br><span class="line">        <span class="keyword">for</span> node <span class="keyword">in</span> cluster_nodes:</span><br><span class="line">            <span class="comment"># 当前节点的所有邻接边，如节点4邻接边为(4,5,weight=8)(4,8,weight=10)</span></span><br><span class="line">            <span class="comment"># 则G[4]返回值为AtlasView(&#123;5:&#123;'weight':8&#125;, 8:&#123;'weight':10&#125;&#125;)</span></span><br><span class="line">            neighbors = G[node]</span><br><span class="line">            <span class="comment"># cluster形式</span></span><br><span class="line">            <span class="comment"># &#123;'cluster_path':weight&#125;   其中cluster_paht=node属性的cluster值</span></span><br><span class="line">            labels = &#123;&#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> ne <span class="keyword">in</span> neighbors: <span class="comment"># ne即为当前节点邻接的节点id</span></span><br><span class="line">                <span class="keyword">if</span> isinstance(ne, int):</span><br><span class="line">                    <span class="string">'''</span></span><br><span class="line"><span class="string">                    判断该邻居的类别是否在其他邻居中存在</span></span><br><span class="line"><span class="string">                        若存在，则将相同类别的权重相加。</span></span><br><span class="line"><span class="string">                    '''</span></span><br><span class="line">                    <span class="keyword">if</span> G.node[ne][<span class="string">'label'</span>] <span class="keyword">in</span> labels:<span class="comment">#G.node[ne]['label']即为id=ne节点的label属性</span></span><br><span class="line">                        labels[G.node[ne][<span class="string">'label'</span>]] += G[node][ne][<span class="string">'weight'</span>]<span class="comment">#将这条邻接边(node,ne)的weight属性赋值给cluster[节点ne的cluster]</span></span><br><span class="line">                    <span class="keyword">else</span>:</span><br><span class="line">                        labels[G.node[ne][<span class="string">'label'</span>]] = G[node][ne][<span class="string">'weight'</span>]</span><br><span class="line"></span><br><span class="line">            <span class="comment"># find the class with the highest edge weight sum</span></span><br><span class="line">            edge_weight_sum = <span class="number">0</span></span><br><span class="line">            max_cluster = <span class="number">0</span></span><br><span class="line">            <span class="comment">#将邻居节点的权重最大值对应的文件路径给到当前节点</span></span><br><span class="line">            <span class="comment">#这里cluster即为path</span></span><br><span class="line">            <span class="keyword">for</span> id <span class="keyword">in</span> labels:</span><br><span class="line">                <span class="keyword">if</span> labels[id] &gt; edge_weight_sum:</span><br><span class="line">                    edge_weight_sum = labels[id]</span><br><span class="line">                    max_cluster = id</span><br><span class="line"></span><br><span class="line">            <span class="comment"># set the class of target node to the winning local class</span></span><br><span class="line">            <span class="comment">#print('node %s was clustered in %s' %(node, max_cluster))</span></span><br><span class="line">            G.node[node][<span class="string">'label'</span>] = max_cluster</span><br><span class="line">    list_label_out = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(len(encodings)):</span><br><span class="line">        list_label_out.append(G.node[i][<span class="string">'label'</span>])</span><br><span class="line">    <span class="comment">#print(list_label_out)</span></span><br><span class="line"></span><br><span class="line">    <span class="string">''' </span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    统计分类错误数量=新类别中不属于原类别的数量      eg： list_label_out=[1,3,4,2,2,4,3,1]</span></span><br><span class="line"><span class="string">    # group_all 返回最终类别标签                     group_all=[1,2,3,4]</span></span><br><span class="line"><span class="string">    # group_num 最终分类数量                        group_num=4</span></span><br><span class="line"><span class="string">    # group_cluster: list,返回相同标签的节点id       group_cluster=[[0,7],[3,4],[1,6],[2,5]]</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line">    group_all = set(list_label_out)</span><br><span class="line">    group_num = len(group_all)</span><br><span class="line">    group_cluster = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> group_all:</span><br><span class="line">        group_cluster.append(find_all_index(list_label_out,item))</span><br><span class="line"></span><br><span class="line">    print(<span class="string">'最终分类数量：%s'</span> %group_num)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,group_num):</span><br><span class="line">        print(<span class="string">'第%d类：%s'</span>%(i,group_cluster[i]))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    _chinese_whispers()</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    
+    
+
+    <div>
+      
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/">Chinese-Whisper,一种简洁分类方法</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 Lumo Wang 的个人博客">Lumo Wang</a></p>
+  <p><span>发布时间:</span>2018年03月05日 - 14:03</p>
+  <p><span>最后更新:</span>2018年11月07日 - 16:11</p>
+  <p><span>原始链接:</span><a href="/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/" title="Chinese-Whisper,一种简洁分类方法">https://luameows.github.io/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="https://luameows.github.io/2018/03/05/程序开发-Chinese-Whisper-一种简洁分类方法/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+	});
+    });  
+</script>
+
+      
+    </div>
+    
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>请我喝杯咖啡，我会继续熬夜的~</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/images/wechatpay.jpg" alt="Lumo Wang 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"><i class="fa fa-tag"></i> python</a>
+          
+            <a href="/tags/分类算法/" rel="tag"><i class="fa fa-tag"></i> 分类算法</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/03/05/学习笔记-数据结构-1-向量/" rel="prev" title="数据结构-1.向量">
+                数据结构-1.向量 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div id="gitalk-container"></div>
+    
+    
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar_1.jpg" alt="Lumo Wang">
+            
+              <p class="site-author-name" itemprop="name">Lumo Wang</p>
+              <p class="site-description motion-element" itemprop="description">深度瞎学，人工智障</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/luameows" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:luameows@163.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://asdfv1929.github.io/" title="asdfv1929" target="_blank">asdfv1929</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CW-算法"><span class="nav-number">2.</span> <span class="nav-text">CW-算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#算法测试"><span class="nav-number">3.</span> <span class="nav-text">算法测试</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Lumo Wang</span>
+
+  
+</div>
+
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共31.8k字</span>
+</div>
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+  <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+   <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID: '2f01fcb4aa34c0c51236',
+          clientSecret: 'fd4f068c4c1f584a82954e5b527e036bcb5d870c',
+          repo: 'luameows.github.io',
+          owner: 'luameows',
+          admin: ['luameows'],
+          id: decodeURI(location.pathname),
+          distractionFreeMode: 'true'
+        })
+        gitalk.render('gitalk-container')           
+       </script>
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('3');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("j9SfgCpISl93oW7WzAj4oUQQ-gzGzoHsz", "lNpX50BewLa4elNxiOtICqBp");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="custom_mathjax_source">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
